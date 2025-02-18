@@ -1,0 +1,59 @@
+.static-tag-chips-container {
+	display: flex;
+	gap: var(--size-4-2);
+	width: var(--file-line-width);
+	max-width: 100%;
+	flex-wrap: wrap;
+	margin: auto;
+}
+.static-tag-chips-container-outer,
+.ftags-children-outer {
+	padding: 0 var(--file-margins);
+}
+.ftags-children-outer {
+	/* padding-bottom: calc(18px + var(--size-4-2)); */
+}
+/* patch vanilla */
+.view-header {
+	flex-shrink: 0;
+}
+.ftags-children {
+	display: flex;
+	gap: var(--size-4-2);
+	width: var(--file-line-width);
+	max-width: 100%;
+	flex-wrap: wrap;
+	margin: auto;
+	padding: var(--size-4-2) 0;
+}
+
+.ftags-children *,
+.static-tag-chips-container > * {
+	cursor: pointer !important;
+}
+
+.static-tag-chips-container > * {
+	display: flex;
+}
+
+.static-tag-chips-container > * > span:hover {
+	opacity: 0.8;
+}
+.static-tag-chips-container > * > span {
+	height: 18px;
+	width: 18px;
+	margin-left: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 1000px;
+	background: var(--tag-background);
+}
+.static-tag-chips-container > * > span > svg {
+	height: 14px;
+	width: 14px;
+}
+
+.ftags-children > *:hover {
+	opacity: 0.9;
+}
