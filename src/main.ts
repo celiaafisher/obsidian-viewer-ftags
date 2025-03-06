@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import {
 	App,
 	IconName,
+	MarkdownView,
 	Menu,
 	Modal,
 	Platform,
@@ -55,7 +55,7 @@ export default class StaticTagChipsPlugin extends Plugin {
 	}
 
 	injectChildren() {
-		const activeView = this.app.workspace.activeLeaf?.view;
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (
 			!activeView ||
 			!("file" in activeView && activeView.file instanceof TFile)
@@ -209,7 +209,7 @@ export default class StaticTagChipsPlugin extends Plugin {
 	}
 
 	injectChips() {
-		const activeView = this.app.workspace.activeLeaf?.view;
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		type ViewType = (typeof ViewType)[keyof typeof ViewType];
 
 		if (
@@ -232,7 +232,7 @@ export default class StaticTagChipsPlugin extends Plugin {
 
 	injectTags() {
 		this.injectChildren();
-		const activeView = this.app.workspace.activeLeaf?.view;
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (
 			!activeView ||
 			!("file" in activeView && activeView.file instanceof TFile)
@@ -374,8 +374,7 @@ export class ConfirmationModal extends Modal {
 						this.close();
 					}),
 			);
-		set.settingEl.style.paddingTop = "10px";
-		set.settingEl.style.paddingBottom = "0px";
+		set.settingEl.classList.add("custom-setting-el");
 	}
 }
 function createTreeItem(
@@ -388,13 +387,9 @@ function createTreeItem(
 		attr: { "data-path": path },
 	});
 	const treeItemSelf = createDiv({
-		cls: "tree-item-self bookmark is-clickable is-active",
+		cls: "tree-item-self custom-tree-item bookmark is-clickable is-active",
 		attr: {
 			draggable: "true",
-			style: `
-				marginInlineStart: 0px !important;
-				paddingInlineStart: 24px !important;
-			`,
 		},
 	});
 	treeItem.appendChild(treeItemSelf);
