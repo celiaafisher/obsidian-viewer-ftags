@@ -335,7 +335,7 @@ export default class StaticTagChipsPlugin extends Plugin {
 		});
 	}
 	override onunload() {
-		this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+		this.app.workspace.iterateAllLeaves((leaf) => {
 			leaf.view.containerEl
 				.querySelector(".static-tag-chips-container-outer")
 				?.remove();
