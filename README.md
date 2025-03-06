@@ -44,7 +44,7 @@ https://github.com/user-attachments/assets/65560688-9fce-4c03-b77f-e5ee27b62525
 
 ## Disclamer / Safety
 
-This plugin uses certain file system APIs that can modify files, such as writing and moving them. However, it should not make any irreversible changes, as it only moves files and modifies .symlinks in notes' frontmatter. That said, always [back up](https://en.wikipedia.org/wiki/Backup#:~:text=3-2-1%20rule) your vault whether you use this plugin or not.
+This plugin uses certain file system APIs that can modify files, such as writing and moving them. However, it should not make any irreversible changes, as it only moves files and modifies symlinks in notes' frontmatter. That said, always [back up](https://en.wikipedia.org/wiki/Backup#:~:text=3-2-1%20rule) your vault whether you use this plugin or not.
 
 ## Contributing
 
