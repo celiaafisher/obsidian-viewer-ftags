@@ -2,8 +2,8 @@
 	"id": "viewer-ftags",
 	"name": "Viewer ftags",
 	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Add file's ftags as chips at the top of the markdown view",
+	"minAppVersion": "1.8.0",
+	"description": "Add file's ftags as chips at the top of the markdown view.",
 	"author": "d7sd6u",
 	"authorUrl": "https://github.com/d7sd6u",
 	"fundingUrl": {
