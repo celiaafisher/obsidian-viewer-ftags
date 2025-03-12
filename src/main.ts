@@ -5,7 +5,6 @@ import {
 	Menu,
 	Modal,
 	Platform,
-	Plugin,
 	setIcon,
 	Setting,
 	setTooltip,
@@ -19,9 +18,15 @@ import {
 import uniq from "lodash-es/uniq";
 import prettyBytes from "pretty-bytes";
 import { ViewType } from "obsidian-typings/src/obsidian/implementations/Constants/ViewType";
+import PluginWithSettings from "../obsidian-reusables/src/PluginWithSettings";
+import { DEFAULT_SETTINGS } from "./settings";
+import { MainPluginSettingsTab } from "./settings";
 
-export default class StaticTagChipsPlugin extends Plugin {
-	override onload() {
+export default class StaticTagChipsPlugin extends PluginWithSettings(
+	DEFAULT_SETTINGS,
+) {
+	override async onload() {
+		await this.initSettings(MainPluginSettingsTab);
 		this.injectChips();
 
 		this.registerEvent(
