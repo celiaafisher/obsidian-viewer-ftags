@@ -296,7 +296,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		const getNext = (p: typeof parents) =>
 			uniq(
 				p
-					.filter((v) => !v.path.includes("Uncategorized"))
+					.filter((v) => !v.path.startsWith(this.settings.inbox))
 					.flatMap((v) => getFileParentIndexes(v, this.app)),
 			)
 				.filter((v) => !visited.has(v.path))
