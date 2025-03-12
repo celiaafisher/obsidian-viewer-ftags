@@ -18,6 +18,18 @@
 .ftags-children-outer {
 	padding: 0 var(--file-margins);
 }
+.viewer-ftag-tag-chip-layer-first {
+	opacity: 1;
+}
+.viewer-ftag-tag-chip-layer-second {
+	opacity: 0.8;
+}
+.viewer-ftag-tag-chip-layer-third {
+	opacity: 0.6;
+}
+.viewer-ftag-tag-chip-layer-fourth {
+	opacity: 0.3;
+}
 /* patch vanilla */
 .view-header {
 	flex-shrink: 0;

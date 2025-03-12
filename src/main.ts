@@ -262,16 +262,20 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		header.insertAdjacentElement("afterend", outer);
 
 		const parents = getFileParentIndexes(currentFile, this.app);
-		const addChip = (parent: TFile, op?: number, toplevel?: boolean) => {
+		const addChip = (
+			parent: TFile,
+			layer: "first" | "second" | "third" | "fourth",
+			toplevel?: boolean,
+		) => {
 			const chip = chipContainer.createSpan({
 				cls: "cm-hashtag cm-hashtag-end cm-hashtag-begin",
 			});
-			if (op) chip.style.opacity = op.toString();
+			chip.classList.add(`viewer-ftag-tag-chip-layer-${layer}`);
 			this.addFileElHandlers(chip, parent, currentFile);
 			chip.setText("#" + parent.basename);
 			if (!toplevel) return;
 			const remove = chip.createSpan();
-			remove.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>`;
+			setIcon(remove, "x");
 			remove.addEventListener("click", (e) => {
 				e.stopPropagation();
 
@@ -310,17 +314,17 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				.map((v) => (visited.add(v.path), v));
 		const next = getNext(parents);
 		for (const parent of parents) {
-			addChip(parent, 1, true);
+			addChip(parent, "first", true);
 		}
 		for (const nextParent of next) {
-			addChip(nextParent, 0.8);
+			addChip(nextParent, "second");
 		}
 		const nextnext = getNext(next);
 		for (const nextParent of nextnext) {
-			addChip(nextParent, 0.6);
+			addChip(nextParent, "third");
 		}
 		for (const nextParent of getNext(nextnext)) {
-			addChip(nextParent, 0.3);
+			addChip(nextParent, "fourth");
 		}
 	}
 
@@ -392,7 +396,7 @@ export class ConfirmationModal extends Modal {
 function createTreeItem(
 	path: string,
 	label: string,
-	customIcon?: IconName,
+	customIcon: string,
 ): HTMLElement {
 	const treeItem = createEl("div", {
 		cls: "tree-item",
@@ -407,11 +411,9 @@ function createTreeItem(
 	treeItem.appendChild(treeItemSelf);
 	const treeItemIcon = createEl("div", { cls: "tree-item-icon" });
 	treeItemSelf.appendChild(treeItemIcon);
-	const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-file"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>`;
 	const treeItemInner = createEl("div", { cls: "tree-item-inner" });
 	treeItemSelf.appendChild(treeItemInner);
-	if (!customIcon) treeItemIcon.innerHTML = icon;
-	else setIcon(treeItemIcon, customIcon);
+	setIcon(treeItemIcon, customIcon);
 
 	const treeItemText = createEl("span", {
 		cls: "tree-item-inner-text",
