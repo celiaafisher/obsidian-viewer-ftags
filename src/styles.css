@@ -6,20 +6,17 @@
 	flex-wrap: wrap;
 	margin: auto;
 }
-.custom-tree-item {
+.viewer-ftags-custom-tree-item {
 	margin-inline-start: 0px !important;
 	padding-inline-start: var(--size-4-6) !important;
 }
-.custom-setting-el {
+.viewer-ftags-custom-setting-el {
 	padding-top: var(--size-4-2) !important;
 	padding-bottom: 0 !important;
 }
 .static-tag-chips-container-outer,
 .ftags-children-outer {
 	padding: 0 var(--file-margins);
-}
-.ftags-children-outer {
-	/* padding-bottom: calc(18px + var(--size-4-2)); */
 }
 /* patch vanilla */
 .view-header {

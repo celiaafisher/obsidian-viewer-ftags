@@ -374,7 +374,7 @@ export class ConfirmationModal extends Modal {
 						this.close();
 					}),
 			);
-		set.settingEl.classList.add("custom-setting-el");
+		set.settingEl.classList.add("viewer-ftags-custom-setting-el");
 	}
 }
 function createTreeItem(
@@ -387,7 +387,7 @@ function createTreeItem(
 		attr: { "data-path": path },
 	});
 	const treeItemSelf = createDiv({
-		cls: "tree-item-self custom-tree-item bookmark is-clickable is-active",
+		cls: "tree-item-self viewer-ftags-custom-tree-item bookmark is-clickable is-active",
 		attr: {
 			draggable: "true",
 		},
