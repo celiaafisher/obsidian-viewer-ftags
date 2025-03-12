@@ -278,7 +278,14 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				new ConfirmationModal(
 					this.app,
 					() => {
-						void removeFtag(parent, currentFile, this.app);
+						void removeFtag(
+							parent,
+							currentFile,
+							this.app,
+							this.app.vault.getFolderByPath(
+								this.settings.inbox,
+							) ?? undefined,
+						);
 					},
 					parent,
 				).open();
