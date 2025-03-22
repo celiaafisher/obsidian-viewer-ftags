@@ -295,7 +295,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				).open();
 			});
 		};
-		if (this.app.plugins.enabledPlugins.has("crosslink-advanced")) {
+		if (this.app.plugins.plugins["crosslink-advanced"]) {
 			const createButton = chipContainer.createSpan({
 				cls: "cm-hashtag cm-hashtag-end cm-hashtag-begin",
 			});
