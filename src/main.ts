@@ -279,6 +279,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 			remove.addEventListener("click", (e) => {
 				e.stopPropagation();
 
+				if (!this.app.vault.getFolderByPath(this.settings.inbox))
+					new Notice(
+						`You should create your inbox folder (${this.settings.inbox}) to be able to delete last ftag (if the last ftag is the inbox you won't be able to delete it too)`,
+					);
+
 				new ConfirmationModal(
 					this.app,
 					() => {
