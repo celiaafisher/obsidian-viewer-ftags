@@ -22,6 +22,14 @@ import PluginWithSettings from "../obsidian-reusables/src/PluginWithSettings";
 import { DEFAULT_SETTINGS } from "./settings";
 import { MainPluginSettingsTab } from "./settings";
 
+function getVirtualChildren(file: TFile, app: App): TFile[] {
+        const front = app.metadataCache.getFileCache(file)?.frontmatter;
+        const links = Array.isArray(front?.symlinks) ? front?.symlinks : [];
+        return links
+                .map((p: string) => app.vault.getAbstractFileByPath(p))
+                .filter((v): v is TFile => v instanceof TFile);
+}
+
 export default class StaticTagChipsPlugin extends PluginWithSettings(
 	DEFAULT_SETTINGS,
 ) {
@@ -59,49 +67,75 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 	}
 
-	injectChildren() {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (
-			!activeView ||
-			!("file" in activeView && activeView.file instanceof TFile)
-		)
-			return;
-		const currentFile = activeView.file;
+       injectChildren() {
+                const mode = this.settings.childVisualization;
+                if (mode === "none") return;
 
-		const header = activeView.containerEl.querySelector(".view-header");
-		if (!header) return;
+                const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+                if (
+                        !activeView ||
+                        !("file" in activeView && activeView.file instanceof TFile)
+                )
+                        return;
+                const currentFile = activeView.file;
 
-		const existing = activeView.containerEl.querySelector(
-			".ftags-children-outer",
-		);
-		if (existing) existing.remove();
+                if (mode === "files-panel") {
+                        const entry = document.querySelector(
+                                `[data-path="${currentFile.path.replace(/"/g, '\\"')}"]`,
+                        );
+                        if (!entry) return;
 
-		const outer = header.createDiv({
-			cls: "ftags-children-outer",
-		});
-		const inner = outer.createDiv({
-			cls: "ftags-children",
-		});
+                        const existing = entry.querySelector(
+                                ".viewer-ftags-virtual-children",
+                        );
+                        existing?.remove();
 
-		const tags = activeView.containerEl.querySelector(
-			".static-tag-chips-container-outer",
-		);
-		tags?.insertAdjacentElement("afterend", outer);
+                        const childrenContainer = createDiv({
+                                cls: "tree-item-children viewer-ftags-virtual-children",
+                        });
 
-		const children = getFileChildrenIndexes(currentFile, this.app);
-		for (const child of children.slice(0, 5)) {
-			inner.appendChild(this.createChildItem(child, currentFile));
-		}
-		if (children.length > 5) {
-			const c = createTreeItem("/", "...", "folder");
-			inner.appendChild(c);
-			c.addEventListener("click", () => {
-				this.app.commands.executeCommandById(
-					"file-explorer:reveal-active-file",
-				);
-			});
-		}
-	}
+                        const children = getVirtualChildren(currentFile, this.app);
+                        for (const child of children) {
+                                childrenContainer.appendChild(
+                                        this.createChildItem(child, currentFile),
+                                );
+                        }
+
+                        if (children.length > 0) entry.appendChild(childrenContainer);
+                        return;
+                }
+
+                // Top bar mode
+                const header = activeView.containerEl.querySelector(".view-header");
+                if (!header) return;
+
+                const existingBar = activeView.containerEl.querySelector(
+                        ".ftags-children-outer",
+                );
+                existingBar?.remove();
+
+                const outer = header.createDiv({ cls: "ftags-children-outer" });
+                const inner = outer.createDiv({ cls: "ftags-children" });
+
+                const tags = activeView.containerEl.querySelector(
+                        ".static-tag-chips-container-outer",
+                );
+                tags?.insertAdjacentElement("afterend", outer);
+
+                const children = getFileChildrenIndexes(currentFile, this.app);
+                for (const child of children.slice(0, 5)) {
+                        inner.appendChild(this.createChildItem(child, currentFile));
+                }
+                if (children.length > 5) {
+                        const c = createTreeItem("/", "...", "folder");
+                        inner.appendChild(c);
+                        c.addEventListener("click", () => {
+                                this.app.commands.executeCommandById(
+                                        "file-explorer:reveal-active-file",
+                                );
+                        });
+                }
+        }
 
 	createChildItem(file: TFile, source: TFile) {
 		const extToIcon: Record<string, IconName> = Object.fromEntries(
@@ -232,11 +266,10 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		)
 			return;
 		this.injectTags();
-		this.injectChildren();
+                this.injectChildren();
 	}
 
-	injectTags() {
-		this.injectChildren();
+        injectTags() {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (
 			!activeView ||
@@ -360,15 +393,18 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		});
 	}
 	override onunload() {
-		this.app.workspace.iterateAllLeaves((leaf) => {
-			leaf.view.containerEl
-				.querySelector(".static-tag-chips-container-outer")
-				?.remove();
-			leaf.view.containerEl
-				.querySelector(".ftags-children-outer")
-				?.remove();
-		});
-	}
+                this.app.workspace.iterateAllLeaves((leaf) => {
+                        leaf.view.containerEl
+                                .querySelector(".static-tag-chips-container-outer")
+                                ?.remove();
+                        leaf.view.containerEl
+                                .querySelector(".ftags-children-outer")
+                                ?.remove();
+                        leaf.view.containerEl
+                                .querySelector(".viewer-ftags-virtual-children")
+                                ?.remove();
+                });
+        }
 }
 
 export class ConfirmationModal extends Modal {

@@ -22,6 +22,10 @@ https://github.com/user-attachments/assets/32783dba-096c-40b4-96eb-4ea613071cbf
 
 If the file has more than 5 children, it shows only the first 5 and adds an ellipsis item to show the rest.
 
+You can change how these children are displayed. The plugin settings let you
+show them as chips in the top bar (the default), list them inside the Files
+panel, or hide them completely.
+
 https://github.com/user-attachments/assets/c2ce464c-f29a-4194-95c8-ab362b084c74
 
 ---
