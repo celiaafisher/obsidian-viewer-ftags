@@ -8,9 +8,9 @@ import {
 	setIcon,
 	Setting,
 	setTooltip,
-        TFile,
-        parseFrontMatterStringArray,
-        parseLinktext,
+	TFile,
+    parseFrontMatterStringArray,
+    parseLinktext,
 } from "obsidian";
 import {
 	getFileChildrenIndexes,
@@ -275,18 +275,19 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		});
 		header.insertAdjacentElement("afterend", outer);
 
-                const fm = this.app.metadataCache.getFileCache(currentFile)?.frontmatter;
-                const mocEntries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
-                const parents = mocEntries
-                        .map((entry) => {
-                                if (entry.startsWith("[[") && entry.endsWith("]]")) {
-                                        entry = entry.slice(2, -2);
-                                }
-                                const link = entry.split("|")[0];
-                                const { path } = parseLinktext(link);
-                                return this.app.metadataCache.getFirstLinkpathDest(path, currentFile.path);
-                        })
-                        .filter((v): v is TFile => v instanceof TFile);
+		const fm = this.app.metadataCache.getFileCache(currentFile)?.frontmatter;
+		const mocEntries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
+		const parents = mocEntries
+				.map((entry) => {
+						if (entry.startsWith("[[") && entry.endsWith("]]")) {
+								entry = entry.slice(2, -2);
+						}
+						const link = entry.includes("|") ? entry.split("|")[0]! : entry;
+						const { path } = parseLinktext(link);
+						return this.app.metadataCache.getFirstLinkpathDest(path, currentFile.path);
+				})
+				.filter((v): v is TFile => v instanceof TFile);
+
 		const addChip = (
 			parent: TFile,
 			layer: "first" | "second" | "third" | "fourth",
