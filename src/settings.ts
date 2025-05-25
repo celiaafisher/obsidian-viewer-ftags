@@ -3,7 +3,8 @@ import Main from "./main";
 import { FolderSuggest } from "../obsidian-reusables/src/FolderSuggest";
 
 export const DEFAULT_SETTINGS = {
-	inbox: "Uncategorized",
+       inbox: "Uncategorized",
+       showChildren: true,
 };
 export class MainPluginSettingsTab extends PluginSettingTab {
 	constructor(
@@ -29,13 +30,26 @@ export class MainPluginSettingsTab extends PluginSettingTab {
 			await this.plugin.saveSettings();
 		};
 
-		new Setting(containerEl)
-			.setName("Inbox folder")
-			.setDesc("Folder where notes without explicit ftags are stored")
-			.addSearch((search) => {
-				search.setValue(this.plugin.settings.inbox).onChange(setInbox);
-				this.suggest = new FolderSuggest(this.app, search.inputEl);
-				this.suggest.onSelect((v) => setInbox(v.path));
-			});
-	}
+               new Setting(containerEl)
+                       .setName("Inbox folder")
+                       .setDesc("Folder where notes without explicit ftags are stored")
+                       .addSearch((search) => {
+                               search.setValue(this.plugin.settings.inbox).onChange(setInbox);
+                               this.suggest = new FolderSuggest(this.app, search.inputEl);
+                               this.suggest.onSelect((v) => setInbox(v.path));
+                       });
+
+               new Setting(containerEl)
+                       .setName("Show child chips")
+                       .setDesc("Display child notes under the tag chips")
+                       .addToggle((toggle) =>
+                               toggle
+                                       .setValue(this.plugin.settings.showChildren)
+                                       .onChange(async (v) => {
+                                               this.plugin.settings.showChildren = v;
+                                               await this.plugin.saveSettings();
+                                               this.plugin.injectChips();
+                                       }),
+                       );
+       }
 }
