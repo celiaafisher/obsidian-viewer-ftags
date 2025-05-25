@@ -19,7 +19,7 @@ import uniq from "lodash-es/uniq";
 import prettyBytes from "pretty-bytes";
 import { ViewType } from "obsidian-typings/src/obsidian/implementations/Constants/ViewType";
 import PluginWithSettings from "../obsidian-reusables/src/PluginWithSettings";
-import { DEFAULT_SETTINGS } from "./settings";
+import { DEFAULT_SETTINGS, ChildrenDisplayMode } from "./settings";
 import { MainPluginSettingsTab } from "./settings";
 
 export default class StaticTagChipsPlugin extends PluginWithSettings(
@@ -59,27 +59,33 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 	}
 
-        injectChildren() {
-                const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-                if (
-                        !activeView ||
-                        !("file" in activeView && activeView.file instanceof TFile)
-                )
-                        return;
+	injectChildren() {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (
+			!activeView ||
+			!("file" in activeView && activeView.file instanceof TFile)
+		)
+			return;
 
-                const existing = activeView.containerEl.querySelector(
-                        ".ftags-children-outer",
-                );
-                if (!this.settings.showChildren) {
-                        existing?.remove();
-                        return;
-                }
+		const existing = activeView.containerEl.querySelector(
+			".ftags-children-outer",
+		);
+		let mode: ChildrenDisplayMode;
+		if (typeof this.settings.showChildren === "string") {
+			mode = this.settings.showChildren as ChildrenDisplayMode;
+		} else {
+			mode = this.settings.showChildren ? "limited" : "off";
+		}
+		if (mode === "off") {
+			existing?.remove();
+			return;
+		}
 
-                const currentFile = activeView.file;
-                const header = activeView.containerEl.querySelector(".view-header");
-                if (!header) return;
+		const currentFile = activeView.file;
+		const header = activeView.containerEl.querySelector(".view-header");
+		if (!header) return;
 
-                if (existing) existing.remove();
+		if (existing) existing.remove();
 
 		const outer = header.createDiv({
 			cls: "ftags-children-outer",
@@ -94,10 +100,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		tags?.insertAdjacentElement("afterend", outer);
 
 		const children = getFileChildrenIndexes(currentFile, this.app);
-		for (const child of children.slice(0, 5)) {
+		const items = mode === "limited" ? children.slice(0, 5) : children;
+		for (const child of items) {
 			inner.appendChild(this.createChildItem(child, currentFile));
 		}
-		if (children.length > 5) {
+		if (mode === "limited" && children.length > 5) {
 			const c = createTreeItem("/", "...", "folder");
 			inner.appendChild(c);
 			c.addEventListener("click", () => {

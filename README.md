@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/988772c5-2024-48d0-ad0e-8239334ecde0
 
 ---
 
-Additionally, the plugin adds child chips below the ftag chips. This behaviour can be toggled via **Show child chips** in the plugin settings.
+Additionally, the plugin adds child chips below the ftag chips. Their behaviour is controlled by the **Child chips** option in the plugin settings. You can hide them, show only the first five, or display all children.
 
 https://github.com/user-attachments/assets/32783dba-096c-40b4-96eb-4ea613071cbf
 
