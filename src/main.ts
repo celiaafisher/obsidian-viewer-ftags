@@ -59,22 +59,27 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 	}
 
-	injectChildren() {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (
-			!activeView ||
-			!("file" in activeView && activeView.file instanceof TFile)
-		)
-			return;
-		const currentFile = activeView.file;
+        injectChildren() {
+                const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+                if (
+                        !activeView ||
+                        !("file" in activeView && activeView.file instanceof TFile)
+                )
+                        return;
 
-		const header = activeView.containerEl.querySelector(".view-header");
-		if (!header) return;
+                const existing = activeView.containerEl.querySelector(
+                        ".ftags-children-outer",
+                );
+                if (!this.settings.showChildren) {
+                        existing?.remove();
+                        return;
+                }
 
-		const existing = activeView.containerEl.querySelector(
-			".ftags-children-outer",
-		);
-		if (existing) existing.remove();
+                const currentFile = activeView.file;
+                const header = activeView.containerEl.querySelector(".view-header");
+                if (!header) return;
+
+                if (existing) existing.remove();
 
 		const outer = header.createDiv({
 			cls: "ftags-children-outer",
