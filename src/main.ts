@@ -1,10 +1,11 @@
 import {
-	App,
-	IconName,
-	MarkdownView,
-	Menu,
-	Modal,
-	Platform,
+        App,
+        FuzzySuggestModal,
+        IconName,
+        MarkdownView,
+        Menu,
+        Modal,
+        Platform,
 	setIcon,
 	Setting,
 	setTooltip,
@@ -269,10 +270,22 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		const outer = header.createDiv({
 			cls: "static-tag-chips-container-outer",
 		});
-		const chipContainer = outer.createDiv({
-			cls: "static-tag-chips-container",
-		});
-		header.insertAdjacentElement("afterend", outer);
+                const chipContainer = outer.createDiv({
+                        cls: "static-tag-chips-container",
+                });
+                header.insertAdjacentElement("afterend", outer);
+
+                const addMoc = chipContainer.createSpan({
+                        cls: "cm-hashtag cm-hashtag-end cm-hashtag-begin",
+                });
+                addMoc.setText("+ Add MoC...");
+                addMoc.addEventListener("click", () => {
+                        new AddMocModal(this.app, currentFile, async (file) => {
+                                await this.addMocToFile(file, currentFile);
+                                this.injectChips();
+                        }).open();
+                });
+                chipContainer.prepend(addMoc);
 
 		const fm =
 			this.app.metadataCache.getFileCache(currentFile)?.frontmatter;
@@ -319,17 +332,6 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				).open();
 			});
 		};
-		if (this.app.plugins.plugins["crosslink-advanced"]) {
-			const createButton = chipContainer.createSpan({
-				cls: "cm-hashtag cm-hashtag-end cm-hashtag-begin",
-			});
-			createButton.setText("+ Add tag...");
-			createButton.addEventListener("click", () => {
-				this.app.commands.executeCommandById(
-					"crosslink-advanced:add-ftag",
-				);
-			});
-		}
 
 		const visited = new Set(parents.map((v) => v.path));
 		const getNext = (p: typeof parents) =>
@@ -356,11 +358,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		}
 	}
 
-	async removeMocFromFile(parent: TFile, file: TFile) {
-		await this.app.fileManager.processFrontMatter(file, (fm) => {
-			let entries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
-			entries = entries.filter((entry) => {
-				let original = entry;
+        async removeMocFromFile(parent: TFile, file: TFile) {
+                await this.app.fileManager.processFrontMatter(file, (fm) => {
+                        let entries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
+                        entries = entries.filter((entry) => {
+                                let original = entry;
 				if (original.startsWith("[[") && original.endsWith("]]"))
 					original = original.slice(2, -2);
 				const link = original.includes("|")
@@ -378,9 +380,20 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				entries.push(this.settings.defaultMoc);
 			}
 
-			fm.MoCs = entries;
-		});
-	}
+                        fm.MoCs = entries;
+                });
+        }
+
+        async addMocToFile(parent: TFile, file: TFile) {
+                await this.app.fileManager.processFrontMatter(file, (fm) => {
+                        const entries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
+                        const link = `[[${this.app.metadataCache.fileToLinktext(parent, file.path)}]]`;
+                        if (!entries.includes(link)) {
+                                entries.push(link);
+                        }
+                        fm.MoCs = entries;
+                });
+        }
 
 	highlightFileEntry(filePath: string) {
 		const entries = document.querySelectorAll(`[data-path="${filePath}"]`);
@@ -445,7 +458,30 @@ export class ConfirmationModal extends Modal {
 					}),
 			);
 		set.settingEl.classList.add("viewer-ftags-custom-setting-el");
-	}
+        }
+}
+
+export class AddMocModal extends FuzzySuggestModal<TFile> {
+        constructor(
+                app: App,
+                private current: TFile,
+                private onSubmit: (file: TFile) => void,
+        ) {
+                super(app);
+                this.setPlaceholder("Choose note to add as MoC");
+        }
+
+        getItems(): TFile[] {
+                return this.app.vault.getMarkdownFiles();
+        }
+
+        getItemText(item: TFile): string {
+                return this.app.metadataCache.fileToLinktext(item, this.current.path);
+        }
+
+        onChooseItem(item: TFile) {
+                this.onSubmit(item);
+        }
 }
 function createTreeItem(
 	path: string,
