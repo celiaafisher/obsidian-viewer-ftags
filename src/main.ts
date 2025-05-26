@@ -332,17 +332,6 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				).open();
 			});
 		};
-		if (this.app.plugins.plugins["crosslink-advanced"]) {
-			const createButton = chipContainer.createSpan({
-				cls: "cm-hashtag cm-hashtag-end cm-hashtag-begin",
-			});
-			createButton.setText("+ Add tag...");
-			createButton.addEventListener("click", () => {
-				this.app.commands.executeCommandById(
-					"crosslink-advanced:add-ftag",
-				);
-			});
-		}
 
 		const visited = new Set(parents.map((v) => v.path));
 		const getNext = (p: typeof parents) =>

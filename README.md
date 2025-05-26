@@ -10,10 +10,6 @@ Higher-level tags ('grandparents') are rendered semi-transparent. The more dista
 
 https://github.com/user-attachments/assets/9e2aef2a-88b8-4502-8668-294d7ef5f1d2
 
-If you have [crosslink-advanced](https://github.com/d7sd6u/obsidian-crosslink-advanced) enabled, a button for adding new tags appears to the left of the tags:
-
-https://github.com/user-attachments/assets/988772c5-2024-48d0-ad0e-8239334ecde0
-
 ---
 
 Additionally, the plugin adds child chips below the ftag chips. Their behaviour is controlled by the **Child chips** option in the plugin settings. You can hide them, show only the first five, or display all children.
