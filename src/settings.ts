@@ -1,15 +1,14 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import Main from "./main";
-import { FolderSuggest } from "../obsidian-reusables/src/FolderSuggest";
 
 export type ChildrenDisplayMode = "off" | "limited" | "all";
 
 export const DEFAULT_SETTINGS: {
-	inbox: string;
 	showChildren: ChildrenDisplayMode;
+	defaultMoc: string;
 } = {
-	inbox: "Uncategorized",
 	showChildren: "limited",
+	defaultMoc: "",
 };
 export class MainPluginSettingsTab extends PluginSettingTab {
 	constructor(
@@ -20,29 +19,9 @@ export class MainPluginSettingsTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	suggest?: FolderSuggest;
-
 	display() {
 		const { containerEl } = this;
 		containerEl.empty();
-		const options = Object.fromEntries(
-			this.app.vault.getAllFolders().map((v) => [v.path, v.path]),
-		);
-		options["/"] = "/";
-
-		const setInbox = async (v: string) => {
-			this.plugin.settings.inbox = v;
-			await this.plugin.saveSettings();
-		};
-
-		new Setting(containerEl)
-			.setName("Inbox folder")
-			.setDesc("Folder where notes without explicit ftags are stored")
-			.addSearch((search) => {
-				search.setValue(this.plugin.settings.inbox).onChange(setInbox);
-				this.suggest = new FolderSuggest(this.app, search.inputEl);
-				this.suggest.onSelect((v) => setInbox(v.path));
-			});
 
 		new Setting(containerEl)
 			.setName("Child chips")
@@ -60,6 +39,19 @@ export class MainPluginSettingsTab extends PluginSettingTab {
 							v as ChildrenDisplayMode;
 						await this.plugin.saveSettings();
 						this.plugin.injectChips();
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Default MoC")
+			.setDesc("MoC applied when last tag is removed")
+			.addText((text) =>
+				text
+					.setPlaceholder("path/to/note")
+					.setValue(this.plugin.settings.defaultMoc)
+					.onChange(async (v) => {
+						this.plugin.settings.defaultMoc = v;
+						await this.plugin.saveSettings();
 					}),
 			);
 	}

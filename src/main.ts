@@ -9,13 +9,12 @@ import {
 	Setting,
 	setTooltip,
 	TFile,
-    parseFrontMatterStringArray,
-    parseLinktext,
+	parseFrontMatterStringArray,
+	parseLinktext,
 } from "obsidian";
 import {
 	getFileChildrenIndexes,
 	getFileParentIndexes,
-	removeFtag,
 } from "../obsidian-reusables/src/ftags";
 import uniq from "lodash-es/uniq";
 import prettyBytes from "pretty-bytes";
@@ -275,18 +274,23 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		});
 		header.insertAdjacentElement("afterend", outer);
 
-		const fm = this.app.metadataCache.getFileCache(currentFile)?.frontmatter;
-		const mocEntries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
+		const fm =
+			this.app.metadataCache.getFileCache(currentFile)?.frontmatter;
+		const mocEntries =
+			parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
 		const parents = mocEntries
-				.map((entry) => {
-						if (entry.startsWith("[[") && entry.endsWith("]]")) {
-								entry = entry.slice(2, -2);
-						}
-						const link = entry.includes("|") ? entry.split("|")[0]! : entry;
-						const { path } = parseLinktext(link);
-						return this.app.metadataCache.getFirstLinkpathDest(path, currentFile.path);
-				})
-				.filter((v): v is TFile => v instanceof TFile);
+			.map((entry) => {
+				if (entry.startsWith("[[") && entry.endsWith("]]")) {
+					entry = entry.slice(2, -2);
+				}
+				const link = entry.includes("|") ? entry.split("|")[0]! : entry;
+				const { path } = parseLinktext(link);
+				return this.app.metadataCache.getFirstLinkpathDest(
+					path,
+					currentFile.path,
+				);
+			})
+			.filter((v): v is TFile => v instanceof TFile);
 
 		const addChip = (
 			parent: TFile,
@@ -305,22 +309,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 			remove.addEventListener("click", (e) => {
 				e.stopPropagation();
 
-				if (!this.app.vault.getFolderByPath(this.settings.inbox))
-					new Notice(
-						`You should create your inbox folder (${this.settings.inbox}) to be able to delete last ftag (if the last ftag is the inbox you won't be able to delete it too)`,
-					);
-
 				new ConfirmationModal(
 					this.app,
-					() => {
-						void removeFtag(
-							parent,
-							currentFile,
-							this.app,
-							this.app.vault.getFolderByPath(
-								this.settings.inbox,
-							) ?? undefined,
-						);
+					async () => {
+						await this.removeMocFromFile(parent, currentFile);
+						this.injectChips();
 					},
 					parent,
 				).open();
@@ -342,7 +335,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		const getNext = (p: typeof parents) =>
 			uniq(
 				p
-					.filter((v) => !v.path.startsWith(this.settings.inbox))
+					.filter((v) => v.path !== this.settings.defaultMoc)
 					.flatMap((v) => getFileParentIndexes(v, this.app)),
 			)
 				.filter((v) => !visited.has(v.path))
@@ -361,6 +354,32 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		for (const nextParent of getNext(nextnext)) {
 			addChip(nextParent, "fourth");
 		}
+	}
+
+	async removeMocFromFile(parent: TFile, file: TFile) {
+		await this.app.fileManager.processFrontMatter(file, (fm) => {
+			let entries = parseFrontMatterStringArray(fm ?? null, "MoCs") ?? [];
+			entries = entries.filter((entry) => {
+				let original = entry;
+				if (original.startsWith("[[") && original.endsWith("]]"))
+					original = original.slice(2, -2);
+				const link = original.includes("|")
+					? original.split("|")[0]!
+					: original;
+				const { path } = parseLinktext(link);
+				const dest = this.app.metadataCache.getFirstLinkpathDest(
+					path,
+					file.path,
+				);
+				return dest?.path !== parent.path;
+			});
+
+			if (entries.length === 0 && this.settings.defaultMoc) {
+				entries.push(this.settings.defaultMoc);
+			}
+
+			fm.MoCs = entries;
+		});
 	}
 
 	highlightFileEntry(filePath: string) {
