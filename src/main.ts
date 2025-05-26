@@ -249,9 +249,15 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		this.injectChildren();
 	}
 
-	injectTags() {
-		this.injectChildren();
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+       injectTags() {
+               this.injectChildren();
+               let childMode: ChildrenDisplayMode;
+               if (typeof this.settings.showChildren === "string") {
+                       childMode = this.settings.showChildren as ChildrenDisplayMode;
+               } else {
+                       childMode = this.settings.showChildren ? "limited" : "off";
+               }
+               const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (
 			!activeView ||
 			!("file" in activeView && activeView.file instanceof TFile)
@@ -267,12 +273,13 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 		if (existing) existing.remove();
 
-		const outer = header.createDiv({
-			cls: "static-tag-chips-container-outer",
-		});
-                const chipContainer = outer.createDiv({
-                        cls: "static-tag-chips-container",
-                });
+               const outer = header.createDiv({
+                       cls: "static-tag-chips-container-outer",
+               });
+               if (childMode === "off") outer.classList.add("children-hidden");
+               const chipContainer = outer.createDiv({
+                       cls: "static-tag-chips-container",
+               });
                 header.insertAdjacentElement("afterend", outer);
 
                 const addMoc = chipContainer.createSpan({

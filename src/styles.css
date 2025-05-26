@@ -16,7 +16,12 @@
 }
 .static-tag-chips-container-outer,
 .ftags-children-outer {
-	padding: 0 var(--file-margins);
+        padding: 0 var(--file-margins);
+}
+
+/* Add space below parent chips when children are hidden */
+.static-tag-chips-container-outer.children-hidden {
+        margin-bottom: 2px;
 }
 .viewer-ftag-tag-chip-layer-first {
 	opacity: 1;
