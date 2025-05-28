@@ -1,7 +1,8 @@
 import {
 	App,
+	debounce,
+	FileView,
 	IconName,
-	MarkdownView,
 	Menu,
 	Modal,
 	Platform,
@@ -17,7 +18,6 @@ import {
 } from "../obsidian-reusables/src/ftags";
 import uniq from "lodash-es/uniq";
 import prettyBytes from "pretty-bytes";
-import { ViewType } from "obsidian-typings/src/obsidian/implementations/Constants/ViewType";
 import PluginWithSettings from "../obsidian-reusables/src/PluginWithSettings";
 import { DEFAULT_SETTINGS } from "./settings";
 import { MainPluginSettingsTab } from "./settings";
@@ -28,6 +28,14 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 	override async onload() {
 		await this.initSettings(MainPluginSettingsTab);
 		this.injectChips();
+
+		const debouncedInjectChips = debounce(
+			() => {
+				this.injectChips();
+			},
+			50,
+			true,
+		);
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", () => {
@@ -47,6 +55,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 		this.registerEvent(
 			this.app.vault.on("create", (file) => {
+				// TODO: fix so that it works when a parent of any opened file is changed, not just active one
 				if (file.parent === this.app.workspace.getActiveFile()?.parent)
 					this.injectChips();
 			}),
@@ -59,18 +68,13 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		);
 		this.registerEvent(
 			this.app.metadataCache.on("resolve", () => {
-				this.injectChips();
+				debouncedInjectChips();
 			}),
 		);
 	}
 
-	injectChildren() {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (
-			!activeView ||
-			!("file" in activeView && activeView.file instanceof TFile)
-		)
-			return;
+	injectChildren(activeView: FileView) {
+		if (!("file" in activeView && activeView.file instanceof TFile)) return;
 		const currentFile = activeView.file;
 
 		const header = activeView.containerEl.querySelector(".view-header");
@@ -87,13 +91,28 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		const inner = outer.createDiv({
 			cls: "ftags-children",
 		});
-
 		const tags = activeView.containerEl.querySelector(
 			".static-tag-chips-container-outer",
 		);
 		tags?.insertAdjacentElement("afterend", outer);
-
-		const children = getFileChildrenIndexes(currentFile, this.app);
+		const regexes: (RegExp | string)[] =
+			(
+				this.app.vault.getConfig("userIgnoreFilters") as
+					| string[]
+					| undefined
+			)?.map((v: string) =>
+				v.startsWith("/") && v.endsWith("/")
+					? new RegExp(v.slice(1, -1))
+					: v,
+			) ?? [];
+		const children = getFileChildrenIndexes(currentFile, this.app).filter(
+			(c) =>
+				!regexes.some((r) =>
+					typeof r === "string"
+						? c.path.startsWith(r)
+						: r.exec(c.path),
+				),
+		);
 		for (const child of children.slice(0, 5)) {
 			inner.appendChild(this.createChildItem(child, currentFile));
 		}
@@ -219,35 +238,27 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 	}
 
 	injectChips() {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		type ViewType = (typeof ViewType)[keyof typeof ViewType];
-
-		if (
-			!activeView ||
-			!(
-				[
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			const activeView = leaf.view;
+			if (
+				![
 					"markdown",
 					"audio",
 					"pdf",
 					"image",
 					"canvas",
 					"dirview",
-				] as ViewType[]
-			).includes(activeView.getViewType() as ViewType)
-		)
-			return;
-		this.injectTags();
-		this.injectChildren();
+				].includes(activeView.getViewType()) ||
+				!(activeView instanceof FileView)
+			)
+				return;
+			this.injectTags(activeView);
+			this.injectChildren(activeView);
+		});
 	}
 
-	injectTags() {
-		this.injectChildren();
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (
-			!activeView ||
-			!("file" in activeView && activeView.file instanceof TFile)
-		)
-			return;
+	injectTags(activeView: FileView) {
+		if (!("file" in activeView && activeView.file instanceof TFile)) return;
 		const currentFile = activeView.file;
 
 		const header = activeView.containerEl.querySelector(".view-header");
