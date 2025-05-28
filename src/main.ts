@@ -174,6 +174,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		item.addEventListener("mouseleave", () => {
 			this.removeHighlightFileEntry();
 		});
+		const open = () => this.app.workspace.getLeaf().openFile(file);
+		const openToTheRight = () =>
+			this.app.workspace.getLeaf("split").openFile(file);
+		const openInNewTab = () =>
+			this.app.workspace.getLeaf("tab").openFile(file);
 		const showMenu = (e: { pageX: number; pageY: number }) => {
 			const menu = new Menu();
 			menu.addItem((e) =>
@@ -181,7 +186,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 					.setSection("open")
 					.setTitle("Open child")
 					.setIcon("lucide-file")
-					.onClick(() => this.app.workspace.getLeaf().openFile(file)),
+					.onClick(() => open()),
 			);
 
 			menu.addItem((e) =>
@@ -189,9 +194,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 					.setSection("open")
 					.setTitle("Open in new tab")
 					.setIcon("lucide-file-plus")
-					.onClick(() =>
-						this.app.workspace.getLeaf("tab").openFile(file),
-					),
+					.onClick(() => openInNewTab()),
 			);
 
 			if (Platform.isDesktop) {
@@ -200,9 +203,7 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 						.setSection("open")
 						.setTitle("Open to the right")
 						.setIcon("lucide-separator-vertical")
-						.onClick(() =>
-							this.app.workspace.getLeaf("split").openFile(file),
-						),
+						.onClick(() => openToTheRight()),
 				);
 			}
 
@@ -231,8 +232,14 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 		item.addEventListener("contextmenu", (e) => {
 			showMenu(e);
 		});
-		item.addEventListener("click", () => {
-			void this.app.workspace.getLeaf().openFile(file);
+		item.addEventListener("click", (e) => {
+			if (e.ctrlKey) {
+				if (e.altKey) {
+					void openToTheRight();
+				} else {
+					void openInNewTab();
+				}
+			} else void open();
 			this.removeHighlightFileEntry();
 		});
 	}
