@@ -57,6 +57,11 @@ export default class StaticTagChipsPlugin extends PluginWithSettings(
 				this.injectChips();
 			}),
 		);
+		this.registerEvent(
+			this.app.metadataCache.on("resolve", () => {
+				this.injectChips();
+			}),
+		);
 	}
 
 	injectChildren() {
