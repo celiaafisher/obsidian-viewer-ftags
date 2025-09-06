@@ -2,17 +2,13 @@
 
 _Do you know what ftags (clones, symlinks) are? If not, you should definitely check [this](https://github.com/d7sd6u/obsidian-lazy-cached-vault-load?tab=readme-ov-file#wait-a-minute-what-are-folderindex-notes-what-are-ftags-what-do-you-mean-annexed) out._
 
-Add tag-styled chips on top of each file view in the workspace, representing all the ftags assigned to the file. Immediate parent tags are rendered the brightest and include a button to remove the connection. If removing an ftag leaves the file with no non-inbox ftags, it is sent to the inbox folder.
+Add tag-styled chips on top of each file view in the workspace, representing all the ftags assigned to the file. Immediate parent tags are rendered the brightest and include a button to remove the connection. If removing an ftag leaves the file without any MoC, the plugin adds the default MoC specified in the settings.
 
 https://github.com/user-attachments/assets/2cbeb33f-cd97-482f-acd1-a24964fa7941
 
 Higher-level tags ('grandparents') are rendered semi-transparent. The more distant a parent is, the more transparent its chip becomes.
 
 https://github.com/user-attachments/assets/9e2aef2a-88b8-4502-8668-294d7ef5f1d2
-
-If you have [crosslink-advanced](https://github.com/d7sd6u/obsidian-crosslink-advanced) enabled, a button for adding new tags appears to the left of the tags:
-
-https://github.com/user-attachments/assets/988772c5-2024-48d0-ad0e-8239334ecde0
 
 ---
 
